@@ -1,0 +1,21 @@
+# CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Pliki wykonywalne
+*.exe
+*.out
+
+# Visual Studio
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.sln
+
+# Pliki tymczasowe
+*.o
+*.obj
+*.log

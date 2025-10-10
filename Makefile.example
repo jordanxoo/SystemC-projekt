@@ -1,0 +1,55 @@
+# Przykładowy Makefile dla SystemC (alternatywa dla CMake)
+# Skopiuj ten plik jako "Makefile" jeśli chcesz używać make zamiast CMake
+
+# Ścieżka do SystemC
+SYSTEMC_HOME = C:/Users/micha/Desktop/semestr\ 5/SW/systemc-3.0.1
+
+# Kompilator
+CXX = g++
+
+# Flagi kompilatora
+CXXFLAGS = -std=c++17 -Wall -I$(SYSTEMC_HOME)/include -Iinclude
+
+# Flagi linkera
+LDFLAGS = -L$(SYSTEMC_HOME)/lib -lsystemc
+
+# Katalogi
+SRC_DIR = src
+OBJ_DIR = obj
+BIN_DIR = bin
+
+# Pliki źródłowe i obiektowe
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+
+# Nazwa programu
+TARGET = $(BIN_DIR)/program.exe
+
+# Domyślny cel
+all: directories $(TARGET)
+
+# Tworzenie katalogów
+directories:
+	@if not exist "$(OBJ_DIR)" mkdir $(OBJ_DIR)
+	@if not exist "$(BIN_DIR)" mkdir $(BIN_DIR)
+
+# Linkowanie
+$(TARGET): $(OBJECTS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
+	@echo "Kompilacja zakonczona: $(TARGET)"
+
+# Kompilacja plików .cpp do .o
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Czyszczenie
+clean:
+	@if exist "$(OBJ_DIR)" rmdir /s /q $(OBJ_DIR)
+	@if exist "$(BIN_DIR)" rmdir /s /q $(BIN_DIR)
+	@echo "Pliki tymczasowe usuniete"
+
+# Uruchomienie
+run: $(TARGET)
+	@$(TARGET)
+
+.PHONY: all clean run directories
