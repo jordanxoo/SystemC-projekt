@@ -1,5 +1,6 @@
 #include <systemc.h>
 #include <iostream>
+#include<systemc>
 
 // Przykładowy prosty moduł SystemC
 SC_MODULE(HelloWorld) {

@@ -19,12 +19,12 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 file(GLOB SOURCES "src/*.cpp")
 
 # Utwórz wykonywalny plik
-add_executable(${PROJECT_NAME} ${SOURCES})
+add_executable(exec ${SOURCES})
 
 # Linkuj bibliotekę SystemC
-target_link_libraries(${PROJECT_NAME} systemc)
+target_link_libraries(exec systemc)
 
 # Dla Windows: dodaj dodatkowe flagi
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE WIN32 _CONSOLE)
+    target_compile_definitions(exec PRIVATE WIN32 _CONSOLE)
 endif()

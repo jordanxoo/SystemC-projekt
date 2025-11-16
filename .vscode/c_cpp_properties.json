@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "C:/Users/micha/Desktop/semestr 5/SW/systemc-3.0.1/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "WIN32",
+                "_CONSOLE"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}
