@@ -25,11 +25,11 @@ void CPU1::process_input() {
                 if (current_devices[i] == 1) { // jesli ity bit ustawiony to palnik jest wlaczony
                     cout << "@" << sc_time_stamp() << " CPU1: Stan palnika " << i << " zmienil sie na ON." << endl;
                     cmd = {BURNER, i, TURN_ON, current_burner_temp.to_int()};
-                    fifo_out->write(cmd);
+                    fifo_out->write_command(cmd);
                 } else { // palnik wylaczony
                     cout << "@" << sc_time_stamp() << " CPU1: Stan palnika " << i << " zmienil sie na OFF." << endl;
                     cmd = {BURNER, i, TURN_OFF, 0};
-                    fifo_out->write(cmd);
+                    fifo_out->write_command(cmd);
                 }
             }
         }
@@ -39,7 +39,7 @@ void CPU1::process_input() {
             for(int i = 0; i < 4; ++i) {
                 if(current_devices[i] == 1) { // aktualnie ustawiona temp
                     cmd = {BURNER, i, SET_TEMP, current_burner_temp.to_int()};
-                    fifo_out->write(cmd);
+                    fifo_out->write_command(cmd);
                 }
             }
         }
@@ -49,16 +49,16 @@ void CPU1::process_input() {
             if (current_devices[4] == 1) { // piekarnik wlaczony
                 cout << "@" << sc_time_stamp() << " CPU1: Stan piekarnika zmienil sie na ON." << endl;
                 cmd = {OVEN, 0, TURN_ON, 0};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
                 // polecenie wlaczenia z ustawiona temperatura
                 cmd = {OVEN, 0, SET_OVEN_FUNCTION, current_oven_func.to_int()};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
                 cmd = {OVEN, 0, SET_TEMP, current_oven_temp.to_int()};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
             } else { // piekarnik wylaczony
                 cout << "@" << sc_time_stamp() << " CPU1: Stan piekarnika zmienil sie na OFF." << endl;
                 cmd = {OVEN, 0, TURN_OFF, 0};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
             }
         }
 
@@ -66,11 +66,11 @@ void CPU1::process_input() {
         if (current_devices[4] == 1) { 
             if (current_oven_func != last_oven_func_state) {
                 cmd = {OVEN, 0, SET_OVEN_FUNCTION, current_oven_func.to_int()};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
             }
             if (current_oven_temp != last_oven_temp_state) {
                 cmd = {OVEN, 0, SET_TEMP, current_oven_temp.to_int()};
-                fifo_out->write(cmd);
+                fifo_out->write_command(cmd);
             }
         }
 
@@ -79,7 +79,7 @@ void CPU1::process_input() {
             std::cout << "@" << sc_time_stamp() << " CPU1: Wykryto zmiane predkosci nawiewiu" << std::endl; 
             cmd = {FAN,0,SET_FAN_SPEED,current_fan_speed.to_int()};
             std::cout << "@" << sc_time_stamp() << " CPU1: Wysylam polecenie do FIFO" << std::endl;
-            fifo_out->write(cmd);
+            fifo_out->write_command(cmd);
         }
         
         // aktualizujemy zapamietany stan

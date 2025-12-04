@@ -9,7 +9,7 @@ void CPU2::process_commands()
     {
         //czekanie na polecenie FIFO -> operacja blokujaca
         std::cout << "@" << sc_time_stamp() << " CPU2: Czekam na polecenie..." << std::endl;
-        Command cmd = fifo_in->read();
+        Command cmd = fifo_in->read_command();
         std::cout << "@" << sc_time_stamp() << " CPU2: Odebrano polecenie: "<< cmd << std::endl;
 
         //przetwarzanie polecenia

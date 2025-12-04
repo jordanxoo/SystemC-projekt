@@ -3,13 +3,13 @@
 
 #include <systemc.h>
 #include "command.h"
-
+#include "command_channel.h"
 SC_MODULE(CPU2) {
     //porty
     sc_in<bool> clk;
     //wejscie z fifo
-    sc_port<sc_fifo_in_if<Command>> fifo_in;
-
+    sc_port<command_read_if> fifo_in;
+  
   //wejscia sterujace do peryferiow
     sc_out<bool> burner_enable[4];
     sc_out<sc_uint<3>> burner_temp[4];

@@ -7,12 +7,12 @@
 #include "oven.h"
 #include "fan.h"
 #include "display_manager.h"
-
+#include "command_channel.h"
 int sc_main(int argc, char* argv[])
 {
     sc_clock clk("clk", 10, SC_NS);
 
-    sc_fifo<Command> command_fifo("command_fifo", 16);
+    CommandChannel command_channel("command_channel");
 
     sc_signal<sc_uint<5>> s_sw_device_select;
     sc_signal<sc_uint<3>> s_sw_burner_temp;
@@ -67,8 +67,8 @@ int sc_main(int argc, char* argv[])
     tb.sw_fan_speed(s_sw_fan_speed);
     cpu1.sw_fan_speed(s_sw_fan_speed);
     
-    cpu1.fifo_out(command_fifo);
-    cpu2.fifo_in(command_fifo);
+    cpu1.fifo_out(command_channel);
+    cpu2.fifo_in(command_channel);
 
     for (int i = 0; i < 4; i++)
     {
@@ -117,6 +117,6 @@ int sc_main(int argc, char* argv[])
     for (int i = 0; i < 4; i++)
     {
         delete burners[i];
-    }
+    } 
     return 0;
 }

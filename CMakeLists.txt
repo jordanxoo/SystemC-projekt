@@ -15,16 +15,33 @@ link_directories(${SYSTEMC_HOME}/lib)
 # Opcjonalnie: dodaj własne katalogi z nagłówkami
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
-# Zbierz wszystkie pliki źródłowe z katalogu src
-file(GLOB SOURCES "src/*.cpp")
+# Zbierz wszystkie pliki źródłowe (główny katalog)
+set(SOURCES
+    sc_main.cpp
+    testbench.cpp
+    cpu1.cpp
+    cpu2.cpp
+    burner.cpp
+    oven.cpp
+    fan.cpp
+    display_manager.cpp
+)
 
 # Utwórz wykonywalny plik
-add_executable(exec ${SOURCES})
+add_executable(stove_simulator ${SOURCES})
 
 # Linkuj bibliotekę SystemC
-target_link_libraries(exec systemc)
+target_link_libraries(stove_simulator systemc)
 
 # Dla Windows: dodaj dodatkowe flagi
 if(WIN32)
-    target_compile_definitions(exec PRIVATE WIN32 _CONSOLE)
+    target_compile_definitions(stove_simulator PRIVATE WIN32 _CONSOLE)
 endif()
+
+# Dodaj target do uruchomienia programu
+add_custom_target(run
+    COMMAND stove_simulator.exe
+    DEPENDS stove_simulator
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    COMMENT "Uruchamianie symulacji SystemC..."
+)

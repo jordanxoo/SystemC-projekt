@@ -3,7 +3,7 @@
 
 #include <systemc.h>
 #include "command.h"
-
+#include "command_channel.h"
 SC_MODULE(CPU1) {
     sc_in<bool> clk;
     // wejscia z panelu uzytkownika
@@ -14,7 +14,7 @@ SC_MODULE(CPU1) {
     sc_in<sc_uint<2>> sw_fan_speed;
 
     // wyjscie do fifo
-    sc_port<sc_fifo_out_if<Command>> fifo_out;
+    sc_port<command_write_if> fifo_out;
 
     //metoda procesu
     void process_input();
