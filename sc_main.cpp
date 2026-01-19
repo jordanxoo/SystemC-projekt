@@ -8,6 +8,21 @@
 #include "fan.h"
 #include "display_manager.h"
 #include "command_channel.h"
+
+#ifdef ENABLE_GUI
+#include "gui_manager.h"
+#include <thread>
+#include <atomic>
+
+std::atomic<bool> simulation_running(true);
+GUIManager* g_gui_manager = nullptr;
+
+void systemc_simulation_thread() {
+    sc_start();
+    simulation_running = false;
+}
+#endif
+
 int sc_main(int argc, char* argv[])
 {
     sc_clock clk("clk", 10, SC_NS);
@@ -39,7 +54,13 @@ int sc_main(int argc, char* argv[])
     sc_signal<bool> s_led_alarm;
     sc_signal<bool> s_display_trigger;
 
+#ifdef ENABLE_GUI
+    GUIManager gui("GUIManager");
+    g_gui_manager = &gui;
+#else
     UserInterface ui("UserInterface");
+#endif
+
     CPU1 cpu1("CPU1_UI_Processor");
     CPU2 cpu2("CPU2_Control_Processor");
     Oven oven("Oven");
@@ -53,6 +74,22 @@ int sc_main(int argc, char* argv[])
         burners[i]->id = i;
     }
 
+#ifdef ENABLE_GUI
+    // No clock needed for GUI
+    cpu1.clk(clk);
+    cpu2.clk(clk);
+
+    gui.sw_device_select(s_sw_device_select);
+    cpu1.sw_device_select(s_sw_device_select);
+    gui.sw_burner_temp(s_sw_burner_temp);
+    cpu1.sw_burner_temp(s_sw_burner_temp);
+    gui.sw_oven_func(s_sw_oven_func);
+    cpu1.sw_oven_func(s_sw_oven_func);
+    gui.sw_oven_temp(s_sw_oven_temp);
+    cpu1.sw_oven_temp(s_sw_oven_temp);
+    gui.sw_fan_speed(s_sw_fan_speed);
+    cpu1.sw_fan_speed(s_sw_fan_speed);
+#else
     ui.clk(clk);
     cpu1.clk(clk);
     cpu2.clk(clk);
@@ -67,8 +104,9 @@ int sc_main(int argc, char* argv[])
     cpu1.sw_oven_temp(s_sw_oven_temp);
     ui.sw_fan_speed(s_sw_fan_speed);
     cpu1.sw_fan_speed(s_sw_fan_speed);
-    
+
     ui.display_trigger(s_display_trigger);
+#endif
     
     cpu1.fifo_out(command_channel);
     cpu2.fifo_in(command_channel);
@@ -116,13 +154,52 @@ int sc_main(int argc, char* argv[])
     cpu2.led_alarm(s_led_alarm);
     dm.alarm_status(s_led_alarm);
 
+#ifdef ENABLE_GUI
+    // Connect GUI status inputs
+    for (int i = 0; i < 4; i++) {
+        gui.burner_status[i](s_led_burner_status[i]);
+        gui.burner_temp_leds[i](s_led_burner_temp[i]);
+    }
+    gui.oven_status(s_led_oven_status);
+    gui.oven_func_leds(s_led_oven_func);
+    gui.oven_temp_hex(s_hex_oven_temp);
+    gui.fan_speed_lcd(s_lcd_fan_speed);
+    gui.fan_on_led(s_led_fan_status);
+    gui.alarm_status(s_led_alarm);
+
+    // Initialize GUI
+    std::cout << "Inicjalizacja GUI...\n";
+    if (!gui.initialize()) {
+        std::cerr << "Nie udalo sie zainicjalizowac GUI!\n";
+        return 1;
+    }
+
+    std::cout << "Symulacja startuje...\n";
+    // Start SystemC simulation in separate thread
+    std::thread sim_thread(systemc_simulation_thread);
+
+    // Main GUI loop
+    while (!gui.should_close() && simulation_running) {
+        gui.render();
+    }
+
+    // Wait for simulation to complete
+    if (simulation_running) {
+        sc_stop();
+    }
+    sim_thread.join();
+
+    gui.cleanup();
+    std::cout << "Symulacja zakonczona...\n";
+#else
     std::cout << "Symulacja startuje...\n";
     sc_start();
     std::cout << "Symulacja zakonczona...\n";
+#endif
 
     for (int i = 0; i < 4; i++)
     {
         delete burners[i];
-    } 
+    }
     return 0;
 }
