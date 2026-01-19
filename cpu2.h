@@ -32,6 +32,11 @@ SC_MODULE(CPU2) {
 
     //metoda procesu
     void process_commands();
+    void check_alarm_conditions();
+    
+    bool local_burner_enable[4];
+    bool local_oven_enable;
+    bool local_fan_status;
 
     SC_CTOR(CPU2) {
         SC_THREAD(process_commands);

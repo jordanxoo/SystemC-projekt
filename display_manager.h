@@ -7,6 +7,9 @@
 
 SC_MODULE(DisplayManager)
 {
+    sc_in<bool> clk;
+    sc_in<bool> display_trigger;
+    
     //wejscia dla palnika
     sc_in<bool> burner_status[4];
     sc_in<sc_uint<3>> burner_temp_leds[4];
@@ -28,14 +31,7 @@ SC_MODULE(DisplayManager)
     SC_CTOR(DisplayManager)
     {
         SC_METHOD(update_display);
-
-        for(int i=0;i<4;i++)
-        {
-            sensitive << burner_status[i] << burner_temp_leds[i];
-        }
-        sensitive << oven_status << oven_func_leds << oven_temp_hex;
-        sensitive << fan_speed_lcd << fan_on_led << alarm_status;
-
+        sensitive << display_trigger.pos();
         dont_initialize();
     }
 

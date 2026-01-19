@@ -1,6 +1,6 @@
 #include "systemc.h"
 #include "command.h"
-#include "testbench.h"
+#include "user_interface.h"
 #include "cpu1.h"
 #include "cpu2.h"
 #include "burner.h"
@@ -37,8 +37,9 @@ int sc_main(int argc, char* argv[])
     sc_signal<sc_uint<2>> s_lcd_fan_speed;
     sc_signal<bool> s_led_fan_status;
     sc_signal<bool> s_led_alarm;
+    sc_signal<bool> s_display_trigger;
 
-    Testbench tb("Testbench");
+    UserInterface ui("UserInterface");
     CPU1 cpu1("CPU1_UI_Processor");
     CPU2 cpu2("CPU2_Control_Processor");
     Oven oven("Oven");
@@ -52,20 +53,22 @@ int sc_main(int argc, char* argv[])
         burners[i]->id = i;
     }
 
-    tb.clk(clk);
+    ui.clk(clk);
     cpu1.clk(clk);
     cpu2.clk(clk);
 
-    tb.sw_device_select(s_sw_device_select);
+    ui.sw_device_select(s_sw_device_select);
     cpu1.sw_device_select(s_sw_device_select);
-    tb.sw_burner_temp(s_sw_burner_temp);
+    ui.sw_burner_temp(s_sw_burner_temp);
     cpu1.sw_burner_temp(s_sw_burner_temp);
-    tb.sw_oven_func(s_sw_oven_func);
+    ui.sw_oven_func(s_sw_oven_func);
     cpu1.sw_oven_func(s_sw_oven_func);
-    tb.sw_oven_temp(s_sw_oven_temp);
+    ui.sw_oven_temp(s_sw_oven_temp);
     cpu1.sw_oven_temp(s_sw_oven_temp);
-    tb.sw_fan_speed(s_sw_fan_speed);
+    ui.sw_fan_speed(s_sw_fan_speed);
     cpu1.sw_fan_speed(s_sw_fan_speed);
+    
+    ui.display_trigger(s_display_trigger);
     
     cpu1.fifo_out(command_channel);
     cpu2.fifo_in(command_channel);
@@ -94,6 +97,9 @@ int sc_main(int argc, char* argv[])
         cpu2.led_burner_temp[i](s_led_burner_temp[i]);
         dm.burner_temp_leds[i](s_led_burner_temp[i]);
     }
+    dm.display_trigger(s_display_trigger);
+    
+    dm.clk(clk);
     
     cpu2.led_oven_status(s_led_oven_status);
     dm.oven_status(s_led_oven_status);

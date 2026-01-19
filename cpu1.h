@@ -42,7 +42,7 @@ SC_MODULE(CPU1) {
     sc_uint<3> last_oven_func_state;
     sc_uint<3> last_oven_temp_state;
 
-    sc_uint<3> last_fan_speed_state;
+    sc_uint<2> last_fan_speed_state;
 
 };
 

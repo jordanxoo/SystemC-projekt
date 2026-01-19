@@ -18,7 +18,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 # Zbierz wszystkie pliki źródłowe (główny katalog)
 set(SOURCES
     sc_main.cpp
-    testbench.cpp
+    user_interface.cpp
     cpu1.cpp
     cpu2.cpp
     burner.cpp

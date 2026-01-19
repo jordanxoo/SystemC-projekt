@@ -4,19 +4,16 @@
 
 void CPU1::process_input() {
     while (true) {
-        wait();
         
-        // odczyt stanu przelacznikow
         sc_uint<5> current_devices = sw_device_select.read();
         sc_uint<3> current_burner_temp = sw_burner_temp.read();
         sc_uint<3> current_oven_func = sw_oven_func.read();
         sc_uint<3> current_oven_temp = sw_oven_temp.read();
 
-        sc_uint<3> current_fan_speed = sw_fan_speed.read();
+        sc_uint<2> current_fan_speed = sw_fan_speed.read();
 
         cout << "@" << sc_time_stamp() << " CPU1: wykryto zmiane na wejsciu." << endl;
         
-        // tworzymy polecenie
         Command cmd;
 
         // sprawdzanie ktory palnik jest aktywny
@@ -44,17 +41,21 @@ void CPU1::process_input() {
             }
         }
         
-        // TODO logika dla piekarnika i nawiewu
+        // Logika dla piekarnika
         if (current_devices[4] != last_devices_state[4]) { 
             if (current_devices[4] == 1) { // piekarnik wlaczony
                 cout << "@" << sc_time_stamp() << " CPU1: Stan piekarnika zmienil sie na ON." << endl;
                 cmd = {OVEN, 0, TURN_ON, 0};
                 fifo_out->write_command(cmd);
-                // polecenie wlaczenia z ustawiona temperatura
-                cmd = {OVEN, 0, SET_OVEN_FUNCTION, current_oven_func.to_int()};
-                fifo_out->write_command(cmd);
-                cmd = {OVEN, 0, SET_TEMP, current_oven_temp.to_int()};
-                fifo_out->write_command(cmd);
+                // Wysyłaj SET_OVEN_FUNCTION i SET_TEMP tylko jeśli wartości są ustawione
+                if(current_oven_func.to_int() > 0) {
+                    cmd = {OVEN, 0, SET_OVEN_FUNCTION, current_oven_func.to_int()};
+                    fifo_out->write_command(cmd);
+                }
+                if(current_oven_temp.to_int() > 0) {
+                    cmd = {OVEN, 0, SET_TEMP, current_oven_temp.to_int()};
+                    fifo_out->write_command(cmd);
+                }
             } else { // piekarnik wylaczony
                 cout << "@" << sc_time_stamp() << " CPU1: Stan piekarnika zmienil sie na OFF." << endl;
                 cmd = {OVEN, 0, TURN_OFF, 0};
@@ -88,5 +89,7 @@ void CPU1::process_input() {
         last_oven_func_state = current_oven_func;
         last_oven_temp_state = current_oven_temp;
         last_fan_speed_state = current_fan_speed;
+        
+        wait(); // Czekaj na kolejną zmianę
     }
 } 

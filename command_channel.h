@@ -6,7 +6,7 @@
 #include"command.h"
 
 class command_write_if : virtual public sc_interface
-{
+{ 
     public:
         
 
