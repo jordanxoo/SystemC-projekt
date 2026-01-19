@@ -8,14 +8,18 @@
 #include "fan.h"
 #include "display_manager.h"
 #include "command_channel.h"
+#include "gui_window.h"
+
 int sc_main(int argc, char* argv[])
 {
+    StoveGUI::getInstance().initialize();
+    
     sc_clock clk("clk", 10, SC_NS);
 
     CommandChannel command_channel("command_channel");
 
     sc_signal<sc_uint<5>> s_sw_device_select;
-    sc_signal<sc_uint<3>> s_sw_burner_temp;
+    sc_signal<sc_uint<3>> s_sw_burner_temp[4];  // Osobny sygnal dla kazdego palnika
     sc_signal<sc_uint<3>> s_sw_oven_func;
     sc_signal<sc_uint<3>> s_sw_oven_temp;
     sc_signal<sc_uint<2>> s_sw_fan_speed;
@@ -59,8 +63,10 @@ int sc_main(int argc, char* argv[])
 
     ui.sw_device_select(s_sw_device_select);
     cpu1.sw_device_select(s_sw_device_select);
-    ui.sw_burner_temp(s_sw_burner_temp);
-    cpu1.sw_burner_temp(s_sw_burner_temp);
+    for(int i = 0; i < 4; i++) {
+        ui.sw_burner_temp[i](s_sw_burner_temp[i]);
+        cpu1.sw_burner_temp[i](s_sw_burner_temp[i]);
+    }
     ui.sw_oven_func(s_sw_oven_func);
     cpu1.sw_oven_func(s_sw_oven_func);
     ui.sw_oven_temp(s_sw_oven_temp);
@@ -116,9 +122,50 @@ int sc_main(int argc, char* argv[])
     cpu2.led_alarm(s_led_alarm);
     dm.alarm_status(s_led_alarm);
 
-    std::cout << "Symulacja startuje...\n";
-    sc_start();
-    std::cout << "Symulacja zakonczona...\n";
+    std::cout << "Simulation starting...\n";
+    std::cout << "GUI: Modern ImGui Interface\n";
+    std::cout << "Close GUI window to stop simulation\n\n";
+    
+    while(StoveGUI::getInstance().isRunning()) {
+        StoveGUI::getInstance().processMessages();
+        
+        // Aktualizuj GUI z aktualnym stanem urzadzen (co 100 NS)
+        bool burner_status_array[4];
+        int burner_temp_array[4];
+        for(int i = 0; i < 4; i++) {
+            burner_status_array[i] = s_led_burner_status[i].read();
+            burner_temp_array[i] = s_led_burner_temp[i].read().to_int();
+        }
+        
+        const char* oven_func_str;
+        switch(s_led_oven_func.read().to_uint()) {
+            case 0: oven_func_str = "Ogrzewanie dol"; break;      // HEAT_BOTTOM
+            case 1: oven_func_str = "Ogrzewanie gora"; break;     // HEAT_TOP
+            case 2: oven_func_str = "Ogrzewanie lewo"; break;     // HEAT_LEFT
+            case 3: oven_func_str = "Ogrzewanie prawo"; break;    // HEAT_RIGHT
+            case 4: oven_func_str = "Ogrzewanie wszystko"; break; // HEAT_ALL
+            case 5: oven_func_str = "Termoobieg"; break;          // TERMOOBIEG
+            default: oven_func_str = "Nieznana funkcja"; break;
+        }
+        
+        StoveGUI::getInstance().updateDisplay(
+            burner_status_array,
+            burner_temp_array,
+            s_led_oven_status.read(),
+            s_hex_oven_temp.read().to_int(),
+            oven_func_str,
+            s_led_fan_status.read(),
+            s_lcd_fan_speed.read().to_int(),
+            s_led_alarm.read()
+        );
+        
+        StoveGUI::getInstance().render();
+        sc_start(100, SC_NS);
+    }
+    
+    std::cout << "\nSimulation finished...\n";
+    
+    StoveGUI::getInstance().shutdown();
 
     for (int i = 0; i < 4; i++)
     {

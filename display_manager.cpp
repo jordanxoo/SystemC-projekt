@@ -23,9 +23,14 @@ void DisplayManager::update_display()
     std::cout << "----------------------------------------------" << std::endl;
 
 
-    //palniki
+    bool burner_status_array[4];
+    int burner_temp_array[4];
+    
     for(int i=0;i<4;i++)
     {
+        burner_status_array[i] = burner_status[i].read();
+        burner_temp_array[i] = burner_temp_leds[i].read().to_int();
+        
         std::cout << "Palnik: " << i << " : ";
         if(burner_status[i].read() == true)
         {
@@ -43,11 +48,14 @@ void DisplayManager::update_display()
     }
 
         
-    //PIEKARNIK
+    bool oven_on = oven_status.read();
+    int oven_temp_val = oven_temp_hex.read().to_int();
+    const char* oven_func_str = oven_func_to_string_dm(oven_func_leds.read());
+    
     std::cout << "Piekarnik: ";
     if(oven_status.read() == true)
     {
-        std::cout << "[ON / ZIELONA] Funkcja Leds:" << oven_func_to_string_dm(oven_func_leds.read())
+        std::cout << "[ON / ZIELONA] Funkcja Leds:" << oven_func_str
         << " TEMP HEX: " << std::hex << oven_temp_hex.read() << std::dec;
     }
     else
@@ -57,7 +65,9 @@ void DisplayManager::update_display()
     std::cout << std::endl;
 
 
-    //nawiew
+    bool fan_on_status = fan_on_led.read();
+    int fan_speed_val = fan_speed_lcd.read().to_int();
+    
     std::cout << "Nawiew: ";
     if(fan_on_led.read())
     {
@@ -70,7 +80,8 @@ void DisplayManager::update_display()
     std::cout << std::endl;
 
 
-    //ALARM
+    bool alarm = alarm_status.read();
+    
     std::cout << "Alarm: ";
     if(alarm_status.read())
     {
@@ -82,4 +93,15 @@ void DisplayManager::update_display()
 
     std::cout << std::endl;
     std::cout << "----------------------------------------------------------------" << std::endl << std::endl;
+    
+    StoveGUI::getInstance().updateDisplay(
+        burner_status_array,
+        burner_temp_array,
+        oven_on,
+        oven_temp_val,
+        oven_func_str,
+        fan_on_status,
+        fan_speed_val,
+        alarm
+    );
 }

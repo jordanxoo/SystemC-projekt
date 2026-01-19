@@ -3,6 +3,7 @@
 
 #include "systemc.h"
 #include "command.h"
+#include "gui_window.h"
 
 
 SC_MODULE(DisplayManager)

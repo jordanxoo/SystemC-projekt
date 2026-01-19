@@ -3,13 +3,7 @@
 
 void CPU2::process_commands()
 {
-    led_alarm.write(false);
     led_fan_status.write(false);
-    
-    for(int i = 0; i < 4; i++)
-        local_burner_enable[i] = false;
-    local_oven_enable = false;
-    local_fan_status = false;
     
     while (true)
     {
@@ -135,8 +129,6 @@ void CPU2::process_commands()
             break;
 
         }
-        
-        check_alarm_conditions();
     }
 }
 

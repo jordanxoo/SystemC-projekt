@@ -6,7 +6,6 @@ void CPU1::process_input() {
     while (true) {
         
         sc_uint<5> current_devices = sw_device_select.read();
-        sc_uint<3> current_burner_temp = sw_burner_temp.read();
         sc_uint<3> current_oven_func = sw_oven_func.read();
         sc_uint<3> current_oven_temp = sw_oven_temp.read();
 
@@ -18,6 +17,8 @@ void CPU1::process_input() {
 
         // sprawdzanie ktory palnik jest aktywny
         for (int i = 0; i < 4; ++i) {
+            sc_uint<3> current_burner_temp = sw_burner_temp[i].read();
+            
             if (current_devices[i] != last_devices_state[i]) { 
                 if (current_devices[i] == 1) { // jesli ity bit ustawiony to palnik jest wlaczony
                     cout << "@" << sc_time_stamp() << " CPU1: Stan palnika " << i << " zmienil sie na ON." << endl;
@@ -29,15 +30,14 @@ void CPU1::process_input() {
                     fifo_out->write_command(cmd);
                 }
             }
-        }
-
-        // sprawdzamy czy temp sie zmienila i czy jakis palnik wlaczony
-        if (current_burner_temp != last_burner_temp_state) {
-            for(int i = 0; i < 4; ++i) {
+            
+            // sprawdzamy czy temp sie zmienila dla tego konkretnego palnika
+            if (current_burner_temp != last_burner_temp_state[i]) {
                 if(current_devices[i] == 1) { // aktualnie ustawiona temp
                     cmd = {BURNER, i, SET_TEMP, current_burner_temp.to_int()};
                     fifo_out->write_command(cmd);
                 }
+                last_burner_temp_state[i] = current_burner_temp;
             }
         }
         
@@ -85,7 +85,7 @@ void CPU1::process_input() {
         
         // aktualizujemy zapamietany stan
         last_devices_state = current_devices;
-        last_burner_temp_state = current_burner_temp;
+        // last_burner_temp_state aktualizowane w petli powyzej
         last_oven_func_state = current_oven_func;
         last_oven_temp_state = current_oven_temp;
         last_fan_speed_state = current_fan_speed;

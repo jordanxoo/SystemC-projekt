@@ -41,6 +41,18 @@ SC_MODULE(CPU2) {
     SC_CTOR(CPU2) {
         SC_THREAD(process_commands);
         sensitive << clk.pos();
+        
+        SC_METHOD(check_alarm_conditions);
+        sensitive << led_burner_status[0] << led_burner_status[1] 
+                  << led_burner_status[2] << led_burner_status[3]
+                  << led_oven_status << led_fan_status;
+        dont_initialize();
+        
+        // Inicjalizacja alarmu (tylko check_alarm_conditions pisze do tego sygnalu)
+        for(int i = 0; i < 4; i++)
+            local_burner_enable[i] = false;
+        local_oven_enable = false;
+        local_fan_status = false;
     }
 };
 
